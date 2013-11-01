@@ -7,7 +7,7 @@ import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.ProgramRunner;
 
 /**
  */
-public class MiniPowerRunnerFactory implements RunnerFactory {
+public class MiniPowerPcRunnerFactory implements RunnerFactory {
 
     class ProgramRunnerImpl implements ProgramRunner {
         private final Processor processor;
@@ -21,6 +21,11 @@ public class MiniPowerRunnerFactory implements RunnerFactory {
         @Override
         public void cycle() {
             processor.cycle();
+        }
+
+        @Override
+        public int getAddress() {
+            return processor.getAddress();
         }
 
         Processor getProcessor() {

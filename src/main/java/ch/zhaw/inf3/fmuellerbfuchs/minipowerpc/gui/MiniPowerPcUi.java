@@ -1,13 +1,33 @@
 package ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.gui;
 
+import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.*;
+import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.impl.DefaultOperationFactory;
+import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.impl.HashMapMemory;
+import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.impl.MiniPowerPcRunnerFactory;
+import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.impl.mnemonics.MnemonicsParser;
+import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.impl.util.Util;
+
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Map;
 
 /**
  */
 public class MiniPowerPcUi {
+    private final Memory memory;
+    private final RunnerFactory runnerFactory;
+    private final ProgramParser parser;
+
+    public MiniPowerPcUi() {
+        this.memory = new HashMapMemory();
+        this.runnerFactory = new MiniPowerPcRunnerFactory();
+        this.parser = new MnemonicsParser(new DefaultOperationFactory());
+    }
+
     private BorderLayout createBorderLayout() {
         return new BorderLayout(10, 10);
     }
@@ -53,6 +73,31 @@ public class MiniPowerPcUi {
                 BorderFactory.createBevelBorder(BevelBorder.RAISED),
                 new EmptyBorder(5, 5, 5, 5)));
         return l;
+    }
+
+    private void repaintMemory(JTextArea memoryArea, int from, int to) {
+        memoryArea.setText("");
+        String address;
+        String value;
+        String valueString;
+        StringBuilder b = new StringBuilder();
+        for (int i = from; i <= to; i += 2) {
+            address = Integer.toString(i) + " + " + Integer.toString(i + 1);
+            value = "0";
+            valueString = "-";
+            MemoryItem m = memory.get(i, MemoryItem.class);
+            if (m != null) {
+                value = m.asBinaryString();
+                valueString = m.asString();
+            }
+            b.append(address);
+            b.append("\t");
+            b.append(Util.leftPadNulls(value, 16));
+            b.append("\t");
+            b.append(valueString);
+            b.append("\n");
+        }
+        memoryArea.setText(b.toString());
     }
 
     public JFrame createUi() {
@@ -114,11 +159,12 @@ public class MiniPowerPcUi {
         final JLabel startAdrFiller = new JLabel();
         startAdrFiller.setPreferredSize(new Dimension(30, 0));
 
-        final JButton buttonStop = new JButton("Stop");
-        final JButton buttonStart = new JButton("Start");
+        final JButton buttonPause = new JButton("Stop");
+        final JButton buttonStart = new JButton("Set start");
         final JButton buttonStep = new JButton("Step");
         final JButton buttonRunSlow = new JButton("Slow");
         final JButton buttonRunFast = new JButton("Fast");
+        final JButton buttonClear = new JButton("Clear");
 
         // memory set
         final JLabel filler = new JLabel();
@@ -139,18 +185,38 @@ public class MiniPowerPcUi {
         // start address
         processorButtons.add(startAddress);
         processorButtons.add(buttonStart);
-        processorButtons.add(buttonStop);
         processorButtons.add(startAdrFiller);
 
         // step buttons
         processorButtons.add(buttonStep);
         processorButtons.add(buttonRunSlow);
         processorButtons.add(buttonRunFast);
+        processorButtons.add(buttonPause);
+        processorButtons.add(buttonClear);
         processorPanel.add(processorButtons, BorderLayout.SOUTH);
 
         final JPanel programButtons = createButtonPanel();
         final JButton buttonLoad = new JButton("Load");
+
+        buttonLoad.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        String text = programText.getText();
+                        Map<Integer, Operation> ops = parser.parse(text);
+                        for (Map.Entry<Integer, Operation> op : ops.entrySet()) {
+                            memory.set(op.getKey(), op.getValue());
+                        }
+                        repaintMemory(commandMemoryLabel, 100, 150);
+                    }
+                });
+            }
+        });
+
         programButtons.add(buttonLoad);
+
         programPanel.add(programButtons, BorderLayout.SOUTH);
 
         tabPanel.add("Processor", processorPanel);
@@ -160,6 +226,9 @@ public class MiniPowerPcUi {
         frame.setLocationByPlatform(true);
         frame.setSize(540, 380);
         frame.getContentPane().add(tabPanel);
+
+        repaintMemory(dataMemoryLabel, 500, 528);
+        repaintMemory(commandMemoryLabel, 100, 150);
 
         return frame;
     }

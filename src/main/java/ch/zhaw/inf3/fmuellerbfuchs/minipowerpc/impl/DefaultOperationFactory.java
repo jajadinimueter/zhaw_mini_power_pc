@@ -14,22 +14,86 @@ import java.util.Map;
 /**
  */
 public class DefaultOperationFactory implements OperationFactory {
-    private Map<String, Class<? extends AbstractOperation>> ops;
+    private Map<String, Creator> ops;
+
+    interface Creator {
+        public Operation create(String[] arguments);
+    }
 
     public DefaultOperationFactory() {
-        ops = new HashMap<String, Class<? extends AbstractOperation>>();
-        ops.put("clr", Clear.class);
-        ops.put("add", Add.class);
-        ops.put("addd", AddDirect.class);
-        ops.put("inc", Increment.class);
-        ops.put("bz", JumpZero.class);
-        ops.put("bzn", JumpNonZero.class);
-        ops.put("bc", JumpCarry.class);
-        ops.put("b", Jump.class);
-        ops.put("bzd", JumpZeroDirect.class);
-        ops.put("bnzd", JumpNonZeroDirect.class);
-        ops.put("bcd", JumpCarryDirect.class);
-        ops.put("bd", JumpDirect.class);
+        ops = new HashMap<>();
+        ops.put("clr", new Creator() {
+            @Override
+            public Operation create(String[] arguments) {
+                return new Clear(arguments);
+            }
+        });
+        ops.put("add", new Creator() {
+            @Override
+            public Operation create(String[] arguments) {
+                return new Add(arguments);
+            }
+        });
+        ops.put("addd", new Creator() {
+            @Override
+            public Operation create(String[] arguments) {
+                return new AddDirect(arguments);
+            }
+        });
+        ops.put("inc", new Creator() {
+            @Override
+            public Operation create(String[] arguments) {
+                return new Increment(arguments);
+            }
+        });
+        ops.put("bz", new Creator() {
+            @Override
+            public Operation create(String[] arguments) {
+                return new JumpZero(arguments);
+            }
+        });
+        ops.put("bzn", new Creator() {
+            @Override
+            public Operation create(String[] arguments) {
+                return new JumpNonZero(arguments);
+            }
+        });
+        ops.put("bc", new Creator() {
+            @Override
+            public Operation create(String[] arguments) {
+                return new JumpCarry(arguments);
+            }
+        });
+        ops.put("b", new Creator() {
+            @Override
+            public Operation create(String[] arguments) {
+                return new Jump(arguments);
+            }
+        });
+        ops.put("bzd", new Creator() {
+            @Override
+            public Operation create(String[] arguments) {
+                return new JumpZeroDirect(arguments);
+            }
+        });
+        ops.put("bnzd", new Creator() {
+            @Override
+            public Operation create(String[] arguments) {
+                return new JumpNonZeroDirect(arguments);
+            }
+        });
+        ops.put("bcd", new Creator() {
+            @Override
+            public Operation create(String[] arguments) {
+                return new JumpCarryDirect(arguments);
+            }
+        });
+        ops.put("bd", new Creator() {
+            @Override
+            public Operation create(String[] arguments) {
+                return new JumpCarryDirect(arguments);
+            }
+        });
     }
 
     private String[] paramsToLower(String[] arguments) {
@@ -51,22 +115,12 @@ public class DefaultOperationFactory implements OperationFactory {
 
         opCode = opCode.toLowerCase();
         arguments = this.paramsToLower(arguments);
-        Class<? extends AbstractOperation> cls = ops.get(opCode);
+        Creator c = ops.get(opCode);
 
-        if (cls == null) {
+        if (c == null) {
             throw new NoSuchOperationException(opCode);
         }
 
-        try {
-            return cls.getConstructor(String[].class).newInstance(arguments);
-        } catch (InstantiationException e) {
-            throw new NoSuchOperationException(opCode, e);
-        } catch (IllegalAccessException e) {
-            throw new NoSuchOperationException(opCode, e);
-        } catch (InvocationTargetException e) {
-            throw new NoSuchOperationException(opCode, e);
-        } catch (NoSuchMethodException e) {
-            throw new NoSuchOperationException(opCode, e);
-        }
+        return c.create(arguments);
     }
 }

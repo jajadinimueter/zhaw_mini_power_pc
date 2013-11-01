@@ -11,7 +11,6 @@ public class MiniPowerPcProcessor implements Processor {
     private int carryBit = 0;
     private List<Register> regs;
     private boolean isJump;
-    private int currentAddress;
     private int nextAddress;
     private Memory memory;
 
@@ -22,6 +21,11 @@ public class MiniPowerPcProcessor implements Processor {
         }
         this.memory = memory;
         this.nextAddress = start;
+    }
+
+    @Override
+    public int getAddress() {
+        return nextAddress;
     }
 
     @Override
@@ -37,7 +41,7 @@ public class MiniPowerPcProcessor implements Processor {
         op.execute(this, memory);
         if (!isJump) {
             // have to set next address by ourseleves
-            nextAddress = nextAddress + 3;
+            nextAddress = nextAddress + 2;
         }
     }
 

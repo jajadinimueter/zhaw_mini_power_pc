@@ -12,6 +12,8 @@ public interface Processor {
 
     public void cycle();
 
+    public int getAddress();
+
     public Register getRegister(int index);
 
     public Register getAccu();
