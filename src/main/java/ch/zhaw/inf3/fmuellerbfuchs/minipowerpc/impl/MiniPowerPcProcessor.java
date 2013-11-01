@@ -23,6 +23,10 @@ public class MiniPowerPcProcessor implements Processor {
         this.nextAddress = start;
     }
 
+    public List<Register> getRegisters() {
+        return regs;
+    }
+
     @Override
     public int getAddress() {
         return nextAddress;
@@ -38,10 +42,12 @@ public class MiniPowerPcProcessor implements Processor {
     public void cycle() {
         isJump = false;
         Operation op = memory.get(nextAddress, Operation.class);
-        op.execute(this, memory);
-        if (!isJump) {
-            // have to set next address by ourseleves
-            nextAddress = nextAddress + 2;
+        if (op != null) {
+            op.execute(this, memory);
+            if (!isJump) {
+                // have to set next address by ourseleves
+                nextAddress = nextAddress + 2;
+            }
         }
     }
 

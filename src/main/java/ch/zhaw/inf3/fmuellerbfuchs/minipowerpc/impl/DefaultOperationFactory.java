@@ -46,6 +46,18 @@ public class DefaultOperationFactory implements OperationFactory {
                 return new Increment(arguments);
             }
         });
+        ops.put("dec", new Creator() {
+            @Override
+            public Operation create(String[] arguments) {
+                return new Decrement(arguments);
+            }
+        });
+        ops.put("lwdd", new Creator() {
+            @Override
+            public Operation create(String[] arguments) {
+                return new LoadWord(arguments);
+            }
+        });
         ops.put("bz", new Creator() {
             @Override
             public Operation create(String[] arguments) {

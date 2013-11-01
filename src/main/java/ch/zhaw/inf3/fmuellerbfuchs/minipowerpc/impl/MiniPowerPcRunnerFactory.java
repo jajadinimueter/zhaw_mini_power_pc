@@ -1,9 +1,8 @@
 package ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.impl;
 
-import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.Memory;
-import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.RunnerFactory;
-import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.Processor;
-import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.ProgramRunner;
+import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.*;
+
+import java.util.List;
 
 /**
  */
@@ -26,6 +25,26 @@ public class MiniPowerPcRunnerFactory implements RunnerFactory {
         @Override
         public int getAddress() {
             return processor.getAddress();
+        }
+
+        @Override
+        public int getCarry() {
+            return processor.getCarry();
+        }
+
+        @Override
+        public List<Register> getRegisters() {
+            return processor.getRegisters();
+        }
+
+        @Override
+        public Register getRegister(int index) {
+            return processor.getRegister(index);
+        }
+
+        @Override
+        public Register getAccu() {
+            return processor.getAccu();
         }
 
         Processor getProcessor() {

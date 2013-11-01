@@ -5,25 +5,26 @@ import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.Processor;
 
 /**
  */
-public class Increment extends AbstractOperation {
-    public Increment(String[] arguments) {
+public class Decrement extends AbstractOperation {
+    public Decrement(String[] arguments) {
         super(arguments);
     }
 
     @Override
     public void execute(Processor processor, Memory memory) {
-        int i = processor.getAccu().get() + 1;
+        int add = ~1 + 1;
+        int i = processor.getAddress() + add;
         processor.getAccu().set(i);
         processor.setCarry(i > processor.getAccu().getMax());
     }
 
     @Override
     public int asBinary() {
-        return 0b0000_0001_0000_0000;
+        return 0;  // FIXME
     }
 
     @Override
     public String asString() {
-        return createStringRepr("INC");
+        return null;  // FIXME
     }
 }

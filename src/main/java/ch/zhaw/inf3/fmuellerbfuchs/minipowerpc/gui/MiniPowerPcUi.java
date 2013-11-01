@@ -4,6 +4,7 @@ import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.*;
 import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.impl.DefaultOperationFactory;
 import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.impl.HashMapMemory;
 import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.impl.MiniPowerPcRunnerFactory;
+import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.impl.memory.Value;
 import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.impl.mnemonics.MnemonicsParser;
 import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.impl.util.Util;
 
@@ -13,6 +14,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -21,19 +23,45 @@ public class MiniPowerPcUi {
     private final Memory memory;
     private final RunnerFactory runnerFactory;
     private final ProgramParser parser;
+    private final ProgramRunner runner;
+
+    private final JTextArea programText;
+
+    private final JEditorPane commandMemoryLabel;
+    private final JEditorPane dataMemoryLabel;
+
+    private final JEditorPane commandReg;
+    private final JEditorPane accu;
+    private final JEditorPane reg2;
+    private final JEditorPane reg3;
+    private final JEditorPane reg4;
+    private final JEditorPane carryFlag;
 
     public MiniPowerPcUi() {
         this.memory = new HashMapMemory();
         this.runnerFactory = new MiniPowerPcRunnerFactory();
         this.parser = new MnemonicsParser(new DefaultOperationFactory());
+        this.runner = runnerFactory.create(memory, 100);
+
+        programText = createProgramTextArea();
+        commandMemoryLabel = createMemoryLabel();
+        dataMemoryLabel = createMemoryLabel();
+
+        commandReg = createCenterLabel("command register");
+        accu = createCenterLabel("accumulator");
+        reg2 = createCenterLabel("register 2");
+        reg3 = createCenterLabel("register 3");
+        reg4 = createCenterLabel("register 4");
+        carryFlag = createCenterLabel("carry flag");
     }
 
     private BorderLayout createBorderLayout() {
         return new BorderLayout(10, 10);
     }
 
-    private JTextArea createMemoryLabel(String text) {
-        JTextArea l = new JTextArea(text);
+    private JEditorPane createMemoryLabel() {
+        JEditorPane l = new JEditorPane();
+        l.setContentType("text/html");
         l.setEnabled(false);
         l.setDisabledTextColor(Color.black);
         l.setBorder(BorderFactory.createCompoundBorder(
@@ -42,10 +70,12 @@ public class MiniPowerPcUi {
         return l;
     }
 
-    private JTextArea createProgramTextArea(String text) {
-        JTextArea p = createMemoryLabel(text);
-        p.setEnabled(true);
-        return p;
+    private JTextArea createProgramTextArea() {
+        JTextArea l = new JTextArea();
+        l.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createBevelBorder(BevelBorder.RAISED),
+                new EmptyBorder(20,20,20,20)));
+        return l;
     }
 
     private JPanel createBorderPanel() {
@@ -64,8 +94,9 @@ public class MiniPowerPcUi {
         return panel;
     }
 
-    private JTextArea createCenterLabel(String text) {
-        JTextArea l = new JTextArea(text);
+    private JEditorPane createCenterLabel(String text) {
+        JEditorPane l = new JEditorPane();
+        l.setContentType("text/html");
         l.setAlignmentX(0.5f);
         l.setEnabled(false);
         l.setDisabledTextColor(Color.black);
@@ -75,12 +106,13 @@ public class MiniPowerPcUi {
         return l;
     }
 
-    private void repaintMemory(JTextArea memoryArea, int from, int to) {
+    private void repaintMemory(JEditorPane memoryArea, int from, int to) {
         memoryArea.setText("");
         String address;
         String value;
         String valueString;
-        StringBuilder b = new StringBuilder();
+        StringBuilder b = new StringBuilder("<html>");
+        b.append("<table>");
         for (int i = from; i <= to; i += 2) {
             address = Integer.toString(i) + " + " + Integer.toString(i + 1);
             value = "0";
@@ -90,34 +122,52 @@ public class MiniPowerPcUi {
                 value = m.asBinaryString();
                 valueString = m.asString();
             }
+            b.append("<tr>");
+            b.append("<td>");
+            b.append("<b>");
             b.append(address);
-            b.append("\t");
+            b.append("</b>");
+            b.append("</td>");
+            b.append("<td>");
             b.append(Util.leftPadNulls(value, 16));
-            b.append("\t");
+            b.append("</td>");
+            b.append("<td>");
+            b.append("<b>");
             b.append(valueString);
-            b.append("\n");
+            b.append("</b>");
+            b.append("</td>");
+            b.append("</tr>");
         }
+        b.append("</table>");
+        b.append("</html>");
         memoryArea.setText(b.toString());
     }
 
-    public JFrame createUi() {
+    private void repaintRegisters() {
+        commandReg.setText("<b>command pointer</b><br/><br/>"
+                + runner.getAddress());
+
+        accu.setText("<b>accumulator</b><br/><br/>"
+                + runner.getAccu().get());
+
+        reg2.setText("<b>register 2</b><br/><br/>"
+                + runner.getRegister(1).get());
+
+        reg3.setText("<b>register 3</b><br/><br/>"
+                + runner.getRegister(2).get());
+
+        reg4.setText("<b>register 4</b><br/><br/>"
+                + runner.getRegister(3).get());
+
+        carryFlag.setText("<b>carry</b><br/><br/>"
+                + runner.getCarry());
+
+    }
+
+    public JFrame createUi() throws IOException {
         final JFrame frame = new JFrame("ZHAW Mini Power PC");
         final JTabbedPane tabPanel = new JTabbedPane();
 
-        // program text area
-        final JTextArea programText = createProgramTextArea("program");
-
-        // memory labels
-        final JTextArea commandMemoryLabel = createMemoryLabel("command memory");
-        final JTextArea dataMemoryLabel = createMemoryLabel("data memory");
-
-        // register labels
-        final JTextArea commandRegLabel = createCenterLabel("command register");
-        final JTextArea reg1Label = createCenterLabel("accumulator");
-        final JTextArea reg2Label = createCenterLabel("register 2");
-        final JTextArea reg3Label = createCenterLabel("register 3");
-        final JTextArea reg4Label = createCenterLabel("register 4");
-        final JTextArea carryLabel = createCenterLabel("carry flag");
 
         final JPanel commandPanel = createBorderPanel();
         commandPanel.setPreferredSize(new Dimension(600, 0));
@@ -133,12 +183,12 @@ public class MiniPowerPcUi {
         final JPanel regPanel = createBorderPanel();
         regPanel.setPreferredSize(new Dimension(300, 0));
         regPanel.setLayout(new GridLayout(6, 1));
-        regPanel.add(commandRegLabel);
-        regPanel.add(reg1Label);
-        regPanel.add(reg2Label);
-        regPanel.add(reg3Label);
-        regPanel.add(reg4Label);
-        regPanel.add(carryLabel);
+        regPanel.add(commandReg);
+        regPanel.add(accu);
+        regPanel.add(reg2);
+        regPanel.add(reg3);
+        regPanel.add(reg4);
+        regPanel.add(carryFlag);
 
         final JPanel processorPanel = new JPanel();
         processorPanel.setLayout(createBorderLayout());
@@ -162,15 +212,43 @@ public class MiniPowerPcUi {
         final JButton buttonPause = new JButton("Stop");
         final JButton buttonStart = new JButton("Set start");
         final JButton buttonStep = new JButton("Step");
+        buttonStep.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        runner.cycle();
+                        repaintRegisters();
+                    }
+                });
+            }
+        });
         final JButton buttonRunSlow = new JButton("Slow");
         final JButton buttonRunFast = new JButton("Fast");
         final JButton buttonClear = new JButton("Clear");
 
         // memory set
         final JLabel filler = new JLabel();
-        final JButton setDataButton = new JButton("Set");
         final JTextField address = new JTextField();
         final JTextField value = new JTextField();
+        final JButton setDataButton = new JButton("Set");
+        setDataButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int adr = Integer.parseInt(address.getText());
+                int val = Integer.parseInt(value.getText());
+                memory.set(adr, new Value(val));
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        repaintMemory(dataMemoryLabel, 500, 528);
+                        repaintMemory(commandMemoryLabel, 100, 150);
+                    }
+                });
+            }
+        });
+
 
         filler.setPreferredSize(new Dimension(10, 0));
         address.setPreferredSize(new Dimension(100, 30));
@@ -229,6 +307,7 @@ public class MiniPowerPcUi {
 
         repaintMemory(dataMemoryLabel, 500, 528);
         repaintMemory(commandMemoryLabel, 100, 150);
+        repaintRegisters();
 
         return frame;
     }
@@ -238,8 +317,13 @@ public class MiniPowerPcUi {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                JFrame frame = ui.createUi();
-                frame.setVisible(true);
+                JFrame frame = null;
+                try {
+                    frame = ui.createUi();
+                    frame.setVisible(true);
+                } catch (IOException e) {
+                    e.printStackTrace(); // FIXME
+                }
             }
         });
     }

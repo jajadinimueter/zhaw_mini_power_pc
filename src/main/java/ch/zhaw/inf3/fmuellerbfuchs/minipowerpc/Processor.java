@@ -1,5 +1,7 @@
 package ch.zhaw.inf3.fmuellerbfuchs.minipowerpc;
 
+import java.util.List;
+
 /**
  * Represents the public processor interface. The {@link Operation} has
  * to operate solely on a processor and a {@link Memory}.
@@ -15,6 +17,8 @@ public interface Processor {
     public int getAddress();
 
     public Register getRegister(int index);
+
+    public List<Register> getRegisters();
 
     public Register getAccu();
 
