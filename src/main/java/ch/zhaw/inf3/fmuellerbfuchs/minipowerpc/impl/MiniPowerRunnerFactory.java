@@ -1,13 +1,13 @@
 package ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.impl;
 
 import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.Memory;
-import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.Pc;
+import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.RunnerFactory;
 import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.Processor;
 import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.ProgramRunner;
 
 /**
  */
-public class MiniPowerPc implements Pc {
+public class MiniPowerRunnerFactory implements RunnerFactory {
 
     class ProgramRunnerImpl implements ProgramRunner {
         private final Processor processor;
@@ -36,7 +36,7 @@ public class MiniPowerPc implements Pc {
      * Run a program on this pc
      * @param memory the memory
      */
-    public ProgramRunner run(Memory memory, int startAddress) {
+    public ProgramRunner create(Memory memory, int startAddress) {
         return new ProgramRunnerImpl(memory, startAddress);
     }
 }
