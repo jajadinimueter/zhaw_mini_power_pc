@@ -15,8 +15,6 @@ public abstract class AbstractJump extends AbstractOperation{
     public void execute(Processor processor, Memory memory) {
         if (mustJump(processor)) {
             processor.next(getJumpAddress(processor));
-        } else {
-            processor.next();
         }
     }
 

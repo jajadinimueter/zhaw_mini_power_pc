@@ -26,7 +26,6 @@ public class Add extends AbstractOperation {
             processor.setCarry(false);
         }
         accu.set(val & accu.getMax());
-        processor.next();
     }
 
     @Override

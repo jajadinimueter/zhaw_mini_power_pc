@@ -13,7 +13,7 @@ public class OperationsTest {
     public void testAdd() {
         Add a = new Add(new String[]{"r1"});
         Memory m = new HashMapMemory();
-        Processor p = new MiniPowerPcProcessor();
+        Processor p = new MiniPowerPcProcessor(m, 100);
         p.getAccu().set(0b0000_1111_1111_1111);
         p.getRegister(1).set(0b1111_0000_0000_0001);
         a.execute(p, m);
