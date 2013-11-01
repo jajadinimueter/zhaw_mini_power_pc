@@ -6,4 +6,6 @@ public interface Register {
     public void set(int value);
 
     public int get();
+
+    public int getMax();
 }

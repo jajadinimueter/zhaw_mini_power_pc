@@ -4,7 +4,7 @@ package ch.zhaw.inf3.fmuellerbfuchs.minipowerpc;
  * A command represents an executable assembler
  * command convertible from and to mnemonics.
  */
-public interface Operation {
+public interface Operation extends MemoryItem {
     /**
      * Execute the command on the given processor
      * @param processor The processor which can be used

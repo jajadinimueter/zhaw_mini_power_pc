@@ -5,9 +5,18 @@ package ch.zhaw.inf3.fmuellerbfuchs.minipowerpc;
  * to operate solely on a processor and a {@link Memory}.
  */
 public interface Processor {
-    public Registers getRegisters();
+    /**
+     * Set operation pointer to next operation
+     */
+    public void next(int address);
 
-    public void setCarry();
+    public void cycle();
 
-    public void clearCarry();
+    public Register getRegister(int index);
+
+    public Register getAccu();
+
+    public void setCarry(boolean carry);
+
+    public int getCarry();
 }

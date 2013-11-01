@@ -28,6 +28,21 @@ public class ParserTest {
         public String toString() {
             return name;
         }
+
+        @Override
+        public int asBinary() {
+            return 0;  // FIXME
+        }
+
+        @Override
+        public String asBinaryString() {
+            return null;  // FIXME
+        }
+
+        @Override
+        public String asString() {
+            return null;  // FIXME
+        }
     }
 
     @Test

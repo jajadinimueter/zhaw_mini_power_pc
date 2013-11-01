@@ -22,6 +22,14 @@ public class DefaultOperationFactory implements OperationFactory {
         ops.put("add", Add.class);
         ops.put("addd", AddDirect.class);
         ops.put("inc", Increment.class);
+        ops.put("bz", JumpZero.class);
+        ops.put("bzn", JumpNonZero.class);
+        ops.put("bc", JumpCarry.class);
+        ops.put("b", Jump.class);
+        ops.put("bzd", JumpZeroDirect.class);
+        ops.put("bnzd", JumpNonZeroDirect.class);
+        ops.put("bcd", JumpCarryDirect.class);
+        ops.put("bd", JumpDirect.class);
     }
 
     private String[] paramsToLower(String[] arguments) {

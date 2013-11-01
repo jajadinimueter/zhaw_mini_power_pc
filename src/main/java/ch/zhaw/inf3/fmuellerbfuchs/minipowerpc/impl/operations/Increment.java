@@ -14,4 +14,14 @@ public class Increment extends AbstractOperation {
     public void execute(Processor processor, Memory memory) {
         // FIXME
     }
+
+    @Override
+    public int asBinary() {
+        return 0;  // FIXME
+    }
+
+    @Override
+    public String asString() {
+        return null;  // FIXME
+    }
 }
