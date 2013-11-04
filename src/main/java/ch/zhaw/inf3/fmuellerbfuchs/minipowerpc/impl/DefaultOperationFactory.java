@@ -106,6 +106,60 @@ public class DefaultOperationFactory implements OperationFactory {
                 return new JumpCarryDirect(arguments);
             }
         });
+        ops.put("swdd", new Creator() {
+            @Override
+            public Operation create(String[] arguments) {
+                return new StoreWord(arguments);
+            }
+        });
+        ops.put("sra", new Creator() {
+            @Override
+            public Operation create(String[] arguments) {
+                return new ShiftRightArithmetic(arguments);
+            }
+        });
+        ops.put("sla", new Creator() {
+            @Override
+            public Operation create(String[] arguments) {
+                return new ShiftLeftArigthmetic(arguments);
+            }
+        });
+        ops.put("srl", new Creator() {
+            @Override
+            public Operation create(String[] arguments) {
+                return new ShiftRightLogic(arguments);
+            }
+        });
+        ops.put("sll", new Creator() {
+            @Override
+            public Operation create(String[] arguments) {
+                return new ShiftLeftLogic(arguments);
+            }
+        });
+        ops.put("and", new Creator() {
+            @Override
+            public Operation create(String[] arguments) {
+                return new And(arguments);
+            }
+        });
+        ops.put("or", new Creator() {
+            @Override
+            public Operation create(String[] arguments) {
+                return new Or(arguments);
+            }
+        });
+        ops.put("not", new Creator() {
+            @Override
+            public Operation create(String[] arguments) {
+                return new Not(arguments);
+            }
+        });
+        ops.put("end", new Creator() {
+            @Override
+            public Operation create(String[] arguments) {
+                return new End(arguments);
+            }
+        });
     }
 
     private String[] paramsToLower(String[] arguments) {

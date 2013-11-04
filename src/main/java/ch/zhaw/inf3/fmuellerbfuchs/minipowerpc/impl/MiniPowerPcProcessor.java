@@ -33,13 +33,18 @@ public class MiniPowerPcProcessor implements Processor {
     }
 
     @Override
+    public void setAddress(int adr) {
+        nextAddress = adr;
+    }
+
+    @Override
     public void next(int address) {
         isJump = true;
         nextAddress = address;
     }
 
     @Override
-    public void cycle() {
+    public boolean cycle() {
         isJump = false;
         Operation op = memory.get(nextAddress, Operation.class);
         if (op != null) {
@@ -48,7 +53,9 @@ public class MiniPowerPcProcessor implements Processor {
                 // have to set next address by ourseleves
                 nextAddress = nextAddress + 2;
             }
+            return true;
         }
+        return false;
     }
 
     public Register getRegister(int index) {

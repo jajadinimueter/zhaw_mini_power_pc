@@ -12,9 +12,11 @@ public interface Processor {
      */
     public void next(int address);
 
-    public void cycle();
+    public boolean cycle();
 
     public int getAddress();
+
+    public void setAddress(int adr);
 
     public Register getRegister(int index);
 

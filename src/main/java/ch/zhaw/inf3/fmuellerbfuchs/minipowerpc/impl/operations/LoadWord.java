@@ -19,8 +19,11 @@ public class LoadWord extends AbstractOperation {
 
     @Override
     public void execute(Processor processor, Memory memory) {
+        int val = 0;
         MemoryItem i = memory.get(adr, MemoryItem.class);
-        int val = i.asBinary();
+        if (i != null) {
+            val = i.asBinary();
+        }
         processor.getRegister(reg).set(val);
     }
 

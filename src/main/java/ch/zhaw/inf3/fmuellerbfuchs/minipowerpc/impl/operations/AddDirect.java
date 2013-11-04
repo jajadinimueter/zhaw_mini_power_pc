@@ -17,9 +17,6 @@ public class AddDirect extends AbstractOperation {
         // make 2 compl
 
         num = (num << 16) >> 16;
-        if (num > 0) {
-            num >>= 1;
-        }
     }
 
     @Override

@@ -18,15 +18,6 @@ public class MnemonicsParser implements ProgramParser {
         this.factory = factory;
     }
 
-    private boolean isBinary(String cmd) {
-        for (char c : cmd.toCharArray()) {
-            if (c != '0' && c != '1') {
-                return false;
-            }
-        }
-        return true;
-    }
-
     public Map<Integer, Operation> parse(String program) {
         if (program == null) {
             throw new RuntimeException("`program` must not be null");
@@ -44,7 +35,9 @@ public class MnemonicsParser implements ProgramParser {
             }
             // delete comments at the end
             String[] commentParts = line.split(";");
+            line = commentParts[0];
 
+            commentParts = line.split("'");
             line = commentParts[0];
 
             String[] parts = line.split("\\s+");

@@ -18,13 +18,18 @@ public class MiniPowerPcRunnerFactory implements RunnerFactory {
         }
 
         @Override
-        public void cycle() {
-            processor.cycle();
+        public boolean cycle() {
+            return processor.cycle();
         }
 
         @Override
         public int getAddress() {
             return processor.getAddress();
+        }
+
+        @Override
+        public void setAddress(int adr) {
+            processor.setAddress(adr);
         }
 
         @Override
