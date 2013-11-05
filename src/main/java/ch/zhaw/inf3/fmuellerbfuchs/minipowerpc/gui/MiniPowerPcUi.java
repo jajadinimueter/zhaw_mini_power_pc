@@ -28,6 +28,7 @@ public class MiniPowerPcUi {
     private boolean stopped = false;
     private boolean updateDisplay = true;
     private boolean running = false;
+    private int stepCount = 0;
 
     private final JTextArea programText;
 
@@ -41,6 +42,7 @@ public class MiniPowerPcUi {
     private final JEditorPane reg4;
     private final JEditorPane carryFlag;
     private final JEditorPane result;
+    private final JEditorPane stepCountPanel;
 
     private final JTextField setAddress = new JTextField();
     private final JTextField setValue = new JTextField();
@@ -73,6 +75,7 @@ public class MiniPowerPcUi {
         reg4 = createCenterLabel();
         carryFlag = createCenterLabel();
         result = createCenterLabel();
+        stepCountPanel = createCenterLabel();
 
         startAddress.setText("100");
         setAddress.setText("500");
@@ -226,6 +229,9 @@ public class MiniPowerPcUi {
         carryFlag.setText("<div style=\"font-size:9px\">" + "<b>Carry flag</b><br/>"
                 + runner.getCarry()+ "</div>");
 
+        stepCountPanel.setText("<div style=\"font-size:9px\">" + "<b>Step count</b><br/>"
+                + stepCount + "</div>");
+
         synchronized (memory) {
             Value val504 = memory.get(504, Value.class);
             Value val506 = memory.get(506, Value.class);
@@ -283,6 +289,7 @@ public class MiniPowerPcUi {
     class RunnerTask extends SwingWorker<Void, Void> {
         @Override
         public Void doInBackground() {
+            stepCount = 0;
             try {
                 while (runner.cycle() && !stopped) {
                     Thread.sleep(delay);
@@ -290,6 +297,7 @@ public class MiniPowerPcUi {
                         repaintMemoryPanes();
                         repaintRegisters();
                     }
+                    stepCount++;
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -325,8 +333,7 @@ public class MiniPowerPcUi {
 
         final JPanel regPanel = createBorderPanel();
         regPanel.setPreferredSize(new Dimension(300, 0));
-        regPanel.setLayout(new GridLayout(7, 1));
-        regPanel.setLayout(new GridLayout(7, 1));
+        regPanel.setLayout(new GridLayout(8, 1));
         regPanel.add(commandReg);
         regPanel.add(accu);
         regPanel.add(reg2);
@@ -334,6 +341,7 @@ public class MiniPowerPcUi {
         regPanel.add(reg4);
         regPanel.add(carryFlag);
         regPanel.add(result);
+        regPanel.add(stepCountPanel);
 
         final JPanel processorPanel = new JPanel();
         processorPanel.setLayout(createBorderLayout());
