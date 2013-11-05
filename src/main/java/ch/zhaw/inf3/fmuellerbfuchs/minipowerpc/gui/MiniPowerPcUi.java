@@ -309,7 +309,7 @@ public class MiniPowerPcUi {
         final JTabbedPane tabPanel = new JTabbedPane();
 
         final JPanel commandPanel = createBorderPanel();
-        commandPanel.setMinimumSize(new Dimension(400, 0));
+        commandPanel.setMinimumSize(new Dimension(300, 0));
         commandPanel.setPreferredSize(new Dimension(450, 0));
         commandPanel.setSize(300, commandPanel.getHeight());
         commandPanel.setLayout(createBorderLayout());
