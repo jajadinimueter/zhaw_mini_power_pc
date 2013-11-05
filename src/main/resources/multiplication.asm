@@ -14,14 +14,14 @@
 
 ;; first number
 116 LWDD 0 #500
-118 BZD #284 ; [end] ; if 0, goto end
+118 BZD #312 ; [end] ; if 0, goto end
 120 SLL ; negative if carry
 122 BCD #126 ; [first number negative]
 124 BD  #140 ; [first number positive]
 
 ; [first number negative]
 126 LWDD 0 #500
-128 NEG
+128 NOT
 130 INC
 132 SWDD 0 #500
 134 CLR 0
@@ -37,8 +37,8 @@
 
 ; [second number negative]
 148 LWDD 0 #502
-150 BZD #284 ; [end] ; if 0, goto end
-152 NEG
+150 BZD #312 ; [end] ; if 0, goto end
+152 NOT
 154 INC
 156 SWDD 0 #502
 158 CLR 0
@@ -51,98 +51,123 @@
 166 LWDD 1 #510
 168 OR 1
 170 BNZD #174 ; [one or both negative]
-172 BD #182 ; [none negative]
+172 BD #192 ; [none negative]
 
 ; [one or both negative]
 ;; calculate negation
 174 LWDD 0 #508
-176 AND 1 ; if both are neg => 1 then 0;
-          ; if one is neg => 0, then 1
-178 NOT
-180 SWDD 0 #508
+176 AND 1 ; if both are neg => 1;
+          ; if one is neg => 0
+178 BZD #184 ; [set one is neg] only one is neg
+
+; [both are neg]
+180 CLR 0
+182 BD #190 ; [store neg]
+
+; [set one is neg]
+184 CLR 0
+186 INC
+188 BD #190 ; [store neg]
+
+; [store neg]
+190 SWDD 0 #508 ; store 0 or 1 in #508
 
 ; [none negative]
 ;; everything prepared, start real work
-182 LWDD 0 #500
-184 SWDD 0 #512 ; store first number into calculation memory
+192 LWDD 0 #500
+194 SWDD 0 #512 ; store first number into calculation memory
 
 ; [mainloop second rightshift]
-    186 LWDD 0 #502
-    188 BRD #262 ; [handle negative] ; if second is 0 => goto end
-    190 SRL ; right shift. for every rightshift one leftshift
-        ; on #512 or #514 if not carry is set
-    192 SWDD 0 #502 ; save
-    194 BCD #198 ; [rightshift carry]
-    196 BD  #224 ; [no rightshift carry]
+    196 LWDD 0 #502
+    198 BZD #266 ; [make 32 bit] ; if second is 0 => goto end
+    200 SRL ; right shift. for every rightshift one leftshift
+            ; on #512 or #514 if not carry is set
+    202 SWDD 0 #502  ; save
+    204 BCD #208 ; [add values]
+    206 BD  #234 ; [shift values]
 
-    ; [rightshift carry]
-    ;; carry is set. add contents of #512 to #504
-    ;;  and #514 to #506
-    198 LWDD 0 #512
-    200 LWDD 1 #504
-    202 ADD  1       ; add 512 + 504
-    204 SWDD 0 #504
-    206 BCD #210 ; [add rightshift carry]
-    208 BD #216 ; [no add rightshift carry]
+    ; [add values]
+        ; 504 = 504 + 512
+        208 LWDD 0 #512
+        210 LWDD 1 #504
+        212 ADD  1
+        214 SWDD 0 #504
+        216 BCD #220  ; [add rightshift carry] carry bit is set
+                      ; must be added to #514
+        218 BD  #226  ; [no add rightshift carry]
 
-    ; [add rightshift carry]
-    ;; carry was set when adding 512 + 504
-    210 LWDD 0 #514
-    212 INC
-    214 SWDD 0 #514
+        ; [add rightshift carry]
+        ;; carry was set when adding 512 + 504
+        220 LWDD 0 #506
+        222 INC
+        224 SWDD 0 #506
 
-    ; [no add rightshift carry]
-    216 LWDD 0 #514
-    218 LWDD 1 #506
-    220 ADD  1
-    222 SWDD 0 #506 ; store #506 part
+        ; [no add rightshift carry]
+        ;; just add current value of #514 to #506
+        ;; 506 = 506 + 514
+        226 LWDD 0 #514
+        228 LWDD 1 #506
+        230 ADD  1
+        232 SWDD 0 #506
 
-    ; [no rightshift carry]
-    ;; no carry set, we have to shift either #512 or
-    ;; #514 according to flag in #516
-    224 LWDD 0 #518
-    226 BZD #230 ; [shift 512]
-    228 BD #254 ; [shift 514]
+    ; [shift values]
+        ; [shift 512]
+        234 LWDD 0 #512
+        236 SLA
+        238 SWDD 0 #512
+        240 BCD #244 ; [shift 512 carry]
+        242 BD #258 ; [shift 514]
 
-    ; [shift 512]
-    230 LWDD 0 #512
-    232 SLL
-    234 SWDD 0 #512
-    236 BZD #240 ; [shift 512 carry]
-    238 BD #186 ; [mainloop second rightshift]
+        ; [shift 512 carry]
+        244 LWDD 0 #514
+        246 BZD #250 ; [init 514]
+        248 BD #258 ; [shift 514]
 
-    ; [shift 512 carry]
-    240 CLR 0
-    242 INC
-    244 SWDD 0 #516 ; now #514 should be shifted. we set
-                ; #516 to 1
-    246 LWDD 0 #514
-    248 INC
-    250 SWDD 0 #514
-    252 BD #186 ; [mainloop second rightshift]
+        ; [init 514]
+        250 LWDD 0 #514
+        252 INC
+        254 SWDD 0 #514
+        256 BD #196 ; [mainloop second rightshift]
 
-    ; [shift 514]
-    254 LWDD 0 #514
-    256 SLL
-    258 SWDD 0 #514
-    260 BD #186 ; [mainloop second rightshift]
+        ; [shift 514]
+        258 LWDD 0 #514
+        260 SLA
+        262 SWDD 0 #514
+        264 BD #196 ; [mainloop second rightshift]
+
+; [make 32 bit]
+266 LWDD 0 #506
+268 SRL
+270 SWDD 0 #506
+272 BCD #276 ; [or 32768]
+274 BD #290 ; [handle negative]
+
+; [or 32768]
+;; add a 1 in front of #504
+276 CLR 0
+278 ADDD #-32768
+280 SWDD 0 #516
+282 LWDD 1 #516
+284 LWDD 0 #504
+286 OR 1
+288 SWDD 0 #504
 
 ; [handle negative]
 ; do the neg work. make #504 and #506
 ;   negative if #508 is set
-262 LWDD 0 #508
-264 BNZD #268 ; [make negative]
-266 BD   #284 ; [end]
+290 LWDD 0 #508
+292 BNZD #296 ; [make negative]
+294 BD   #312 ; [end]
 
 ; [make negative]
-268 LWDD 0 #504
-270 NEG
-272 INC
-274 SWDD 0 #504
-276 LWDD 0 #506
-278 NEG
-280 INC
-282 SWDD 0 #506
+296 LWDD 0 #504
+298 NOT
+300 INC
+302 SWDD 0 #504
+304 LWDD 0 #506
+306 NOT
+308 INC
+310 SWDD 0 #506
 
 ; [end]
-284 END
+312 END

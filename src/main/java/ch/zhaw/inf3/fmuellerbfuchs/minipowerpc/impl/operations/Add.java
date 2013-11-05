@@ -21,6 +21,9 @@ public class Add extends AbstractOperation {
         Register accu = processor.getAccu();
         int val = r.get() + accu.get();
         processor.setCarry(isMaxedOut(accu, val));
+        if (val > accu.getMax()) {
+            val = val & ~(1<<15);
+        }
         accu.set(val);
     }
 

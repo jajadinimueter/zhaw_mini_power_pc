@@ -13,14 +13,15 @@ public class ShiftLeftArigthmetic extends AbstractOperation {
     @Override
     public void execute(Processor processor, Memory memory) {
         int val = processor.getAccu().get();
+        boolean neg = val < 0;
 
-        int mod = 0;
-        if (val < 0) {
-            mod = 0b1000_0000_0000_0000;
-        }
         int msb = (val & (1 << 14)) >> 14;
         val <<= 1; // msb is 2nd
-        val |= mod; // reset negative
+        if (neg) {
+            val |= 1 << 15; // reset negative
+        } else {
+            val = val & ~(1 << 15);
+        }
 
         processor.setCarry(msb == 1);
         processor.getAccu().set(val);

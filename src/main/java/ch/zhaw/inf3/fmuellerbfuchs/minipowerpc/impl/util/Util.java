@@ -74,10 +74,14 @@ public class Util {
     }
 
     public static String leftPadNulls(String str, int size) {
+        return leftPad(str, size, "0");
+    }
+
+    public static String leftPad(String str, int size, String pad) {
         int l = str.length();
         StringBuilder b = new StringBuilder();
         for (int i = 0; i < size - l; i++) {
-            b.append("0");
+            b.append(pad);
         }
         b.append(str);
         return b.toString();

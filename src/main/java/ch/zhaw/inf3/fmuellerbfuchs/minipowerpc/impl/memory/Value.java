@@ -1,6 +1,7 @@
 package ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.impl.memory;
 
 import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.MemoryItem;
+import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.impl.util.Util;
 
 /**
  */
@@ -18,11 +19,17 @@ public class Value implements MemoryItem {
 
     @Override
     public String asBinaryString() {
-        return Integer.toBinaryString(value);
+        return Util.formatBinary(value);
     }
 
     @Override
     public String asString() {
-        return Integer.toString(value);
+        String x = asBinaryString();
+//        if (x.substring(0, 1).equals("1")) {
+//            x = Util.leftPad(x, 32, "1");
+//        }
+
+        return Integer.toString(
+                Integer.valueOf(x, 2).shortValue());
     }
 }

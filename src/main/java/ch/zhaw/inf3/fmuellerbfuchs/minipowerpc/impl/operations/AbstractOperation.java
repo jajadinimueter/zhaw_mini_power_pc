@@ -29,13 +29,7 @@ public abstract class AbstractOperation implements Operation {
     protected boolean isMaxedOut(Register reg, int val) {
         int max = reg.getMax();
         int min = reg.getMin();
-        if (val > max) {
-            return true;
-        }
-        if (val < min) {
-            return true;
-        }
-        return false;
+        return val > max || val < min;
     }
 
     @Override

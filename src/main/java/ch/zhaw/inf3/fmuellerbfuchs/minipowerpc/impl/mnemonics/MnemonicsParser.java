@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 public class MnemonicsParser implements ProgramParser {
 
     private OperationFactory factory;
+    private String[] comments = new String[]{";", "'", "//"};
 
     public MnemonicsParser(OperationFactory factory) {
         this.factory = factory;
@@ -32,16 +33,35 @@ public class MnemonicsParser implements ProgramParser {
 
         for (String line : program.split(System.getProperty("line.separator"))) {
             line = line.trim();
-            // omit lines starting with a comment
-            // delete comments at the end
-            String[] commentParts = line.split(";");
-            line = commentParts[0].trim();
 
-            commentParts = line.split("'");
-            line = commentParts[0].trim();
+            if (line.equals("")) {
+                continue;
+            }
 
-            commentParts = line.split("//");
-            line = commentParts[0].trim();
+            boolean skip = false;
+            for (String c : comments) {
+                if (line.startsWith(c)) {
+                    skip = true;
+                    break;
+                }
+            }
+
+            if (skip) {
+                continue;
+            }
+
+            for (String c : comments) {
+                String[] parts = line.split(";");
+                if (parts.length == 0) {
+                    skip = true;
+                    break;
+                }
+                line = parts[0];
+            }
+
+            if (skip) {
+                continue;
+            }
 
             if (line.equals("")) {
                 continue;
