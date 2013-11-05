@@ -14,7 +14,7 @@
 
 ;; first number
 116 LWDD 0 #500
-118 BZD #312 ; [end] ; if 0, goto end
+118 BZD #310 ; [end] ; if 0, goto end
 120 SLL ; negative if carry
 122 BCD #126 ; [first number negative]
 124 BD  #140 ; [first number positive]
@@ -37,7 +37,7 @@
 
 ; [second number negative]
 148 LWDD 0 #502
-150 BZD #312 ; [end] ; if 0, goto end
+150 BZD #310 ; [end] ; if 0, goto end
 152 NOT
 154 INC
 156 SWDD 0 #502
@@ -155,7 +155,7 @@
 ;   negative if #508 is set
 290 LWDD 0 #508
 292 BNZD #296 ; [make negative]
-294 BD   #312 ; [end]
+294 BD   #310 ; [end]
 
 ; [make negative]
 296 LWDD 0 #504
@@ -164,8 +164,7 @@
 302 SWDD 0 #504
 304 LWDD 0 #506
 306 NOT
-308 INC
-310 SWDD 0 #506
+308 SWDD 0 #506
 
 ; [end]
-312 END
+310 END
