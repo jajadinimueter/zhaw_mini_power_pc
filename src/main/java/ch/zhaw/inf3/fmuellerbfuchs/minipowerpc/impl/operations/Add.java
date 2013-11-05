@@ -20,12 +20,8 @@ public class Add extends AbstractOperation {
         Register r = processor.getRegister(reg);
         Register accu = processor.getAccu();
         int val = r.get() + accu.get();
-        if (val > accu.getMax()) {
-            processor.setCarry(true);
-        } else {
-            processor.setCarry(false);
-        }
-        accu.set(val & accu.getMax());
+        processor.setCarry(isMaxedOut(accu, val));
+        accu.set(val);
     }
 
     @Override

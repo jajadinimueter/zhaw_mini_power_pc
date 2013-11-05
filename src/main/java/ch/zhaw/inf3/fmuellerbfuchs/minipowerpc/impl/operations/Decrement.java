@@ -2,6 +2,7 @@ package ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.impl.operations;
 
 import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.Memory;
 import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.Processor;
+import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.Register;
 
 /**
  */
@@ -12,10 +13,10 @@ public class Decrement extends AbstractOperation {
 
     @Override
     public void execute(Processor processor, Memory memory) {
-        int add = ~1 + 1;
-        int i = processor.getAddress() + add;
-        processor.getAccu().set(i);
-        processor.setCarry(i > processor.getAccu().getMax());
+        Register accu = processor.getAccu();
+        int val = accu.get() - 1;
+        accu.set(val);
+        processor.setCarry(isMaxedOut(accu, val));
     }
 
     @Override

@@ -38,6 +38,11 @@ public class MiniPowerPcRunnerFactory implements RunnerFactory {
         }
 
         @Override
+        public void clearCarry() {
+            processor.setCarry(false);
+        }
+
+        @Override
         public List<Register> getRegisters() {
             return processor.getRegisters();
         }

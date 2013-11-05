@@ -13,6 +13,8 @@ public interface ProgramRunner {
 
     public int getCarry();
 
+    public void clearCarry();
+
     public List<Register> getRegisters();
 
     public Register getRegister(int index);

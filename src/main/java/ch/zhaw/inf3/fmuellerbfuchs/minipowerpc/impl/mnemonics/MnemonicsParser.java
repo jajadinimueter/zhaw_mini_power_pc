@@ -4,9 +4,12 @@ import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.Operation;
 import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.OperationFactory;
 import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.ProgramParser;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  */
@@ -30,41 +33,59 @@ public class MnemonicsParser implements ProgramParser {
         for (String line : program.split(System.getProperty("line.separator"))) {
             line = line.trim();
             // omit lines starting with a comment
-            if (line.startsWith(";")) {
-                continue;
-            }
             // delete comments at the end
             String[] commentParts = line.split(";");
-            line = commentParts[0];
+            line = commentParts[0].trim();
 
             commentParts = line.split("'");
-            line = commentParts[0];
+            line = commentParts[0].trim();
+
+            commentParts = line.split("//");
+            line = commentParts[0].trim();
+
+            if (line.equals("")) {
+                continue;
+            }
 
             String[] parts = line.split("\\s+");
 
             if (parts.length < 2) {
-                throw new RuntimeException("Invalid command %s");
+                throw new RuntimeException("Invalid command "
+                        + Arrays.toString(parts));
             }
 
             int adr = Integer.parseInt(parts[0]);
 
             String opCode = parts[1];
 
-            String[] arguments;
+            // maybe its a number
+            try {
+                Integer.parseInt(opCode);
+                ops.put(adr, factory.create(opCode));
+            } catch (NumberFormatException nf) {
+                String[] arguments;
 
-            if (parts.length > 2) {
-                // additional arguments
-                arguments = new String[parts.length - 2];
-                for (int i = 0; i < arguments.length; i++) {
-                    String arg = parts[i+2];
-                    arg = arg.replace(",", "");
-                    arguments[i] = arg;
+                if (parts.length > 2) {
+                    // additional arguments
+                    arguments = new String[parts.length - 2];
+                    for (int i = 0; i < arguments.length; i++) {
+                        String arg = parts[i+2];
+                        arg = arg.replace(",", "");
+                        arguments[i] = arg;
+                    }
+                } else {
+                    arguments = new String[]{};
                 }
-            } else {
-                arguments = new String[]{};
+
+                try {
+                    ops.put(adr, factory.create(opCode, arguments));
+                } catch (Exception e) {
+                    System.out.println("Exception while creating "
+                            + adr + " " + opCode + " " + Arrays.toString(arguments));
+                    e.printStackTrace();
+                }
             }
 
-            ops.put(adr, factory.create(opCode, arguments));
         }
 
         return ops;

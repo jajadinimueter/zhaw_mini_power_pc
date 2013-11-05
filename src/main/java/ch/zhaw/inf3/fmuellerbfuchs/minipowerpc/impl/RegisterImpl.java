@@ -19,6 +19,11 @@ public class RegisterImpl implements Register {
 
     @Override
     public int getMax() {
-        return 0b1111_1111_1111_1111;
+        return 32767;
+    }
+
+    @Override
+    public int getMin() {
+        return -32768;
     }
 }

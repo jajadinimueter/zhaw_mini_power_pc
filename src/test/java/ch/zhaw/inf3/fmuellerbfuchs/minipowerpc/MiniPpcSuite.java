@@ -9,5 +9,6 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(value=Suite.class)
 @SuiteClasses(value = {ParserTest.class,
                        UtilTest.class,
-                       OperationsTest.class})
+                       OperationsTest.class,
+                       ProgramTest.class})
 public class MiniPpcSuite {}

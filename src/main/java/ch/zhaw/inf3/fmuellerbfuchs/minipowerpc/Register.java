@@ -8,4 +8,6 @@ public interface Register {
     public int get();
 
     public int getMax();
+
+    public int getMin();
 }

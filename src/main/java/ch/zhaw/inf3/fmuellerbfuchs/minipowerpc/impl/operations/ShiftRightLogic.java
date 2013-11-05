@@ -15,7 +15,7 @@ public class ShiftRightLogic extends AbstractOperation {
         int val = processor.getAccu().get();
         int carry = val & 1;
         val >>= 1;
-        val = val & ~(1 << 16);
+        val = val & ~(1 << 15);
         processor.setCarry(carry == 1);
         processor.getAccu().set(val);
     }

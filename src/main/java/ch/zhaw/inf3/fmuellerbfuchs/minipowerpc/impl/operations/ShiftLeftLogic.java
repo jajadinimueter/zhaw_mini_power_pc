@@ -13,8 +13,8 @@ public class ShiftLeftLogic extends AbstractOperation {
     @Override
     public void execute(Processor processor, Memory memory) {
         int val = processor.getAccu().get();
-        int msb = (val & ~(1 << 16)) >> 16;
-        val <<= 16;
+        int msb = (val & (1 << 15)) >> 15;
+        val <<= 1;
         processor.setCarry(msb == 1);
         processor.getAccu().set(val);
     }

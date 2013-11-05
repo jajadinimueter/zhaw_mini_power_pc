@@ -55,6 +55,11 @@ public class ParserTest {
                 assert Arrays.equals(arguments, new String[]{"r1", "300"});
                 return new DummyOperation(opName, arguments);
             }
+
+            @Override
+            public Operation create(String input) {
+                return null;  // FIXME
+            }
         };
         ProgramParser p = new MnemonicsParser(fac);
         Map<Integer, Operation> ops = p.parse(code);

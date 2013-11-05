@@ -7,7 +7,6 @@ import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.impl.MiniPowerPcRunnerFactory;
 import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.impl.memory.Value;
 import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.impl.mnemonics.MnemonicsParser;
 import ch.zhaw.inf3.fmuellerbfuchs.minipowerpc.impl.util.Util;
-import javafx.concurrent.Worker;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
@@ -26,6 +25,8 @@ public class MiniPowerPcUi {
     private final ProgramParser parser;
     private final ProgramRunner runner;
     private int delay = 0;
+    private boolean stopped = false;
+    private boolean updateDisplay = true;
     private boolean running = false;
 
     private final JTextArea programText;
@@ -39,6 +40,7 @@ public class MiniPowerPcUi {
     private final JEditorPane reg3;
     private final JEditorPane reg4;
     private final JEditorPane carryFlag;
+    private final JEditorPane result;
 
     private final JTextField setAddress = new JTextField();
     private final JTextField setValue = new JTextField();
@@ -49,8 +51,9 @@ public class MiniPowerPcUi {
     private final JButton buttonStop = new JButton("Stop");
     private final JButton buttonSetStart = new JButton("Set start");
     private final JButton buttonStep = new JButton("Step");
+    private final JButton buttonRunMedium = new JButton("Medium");
     private final JButton buttonRunFast = new JButton("Fast");
-    private final JButton buttonClear = new JButton("Clear");
+    private final JButton buttonClear = new JButton("Clear memory");
 
 
     public MiniPowerPcUi() {
@@ -63,18 +66,29 @@ public class MiniPowerPcUi {
         programMemory = createMemoryLabel();
         dataMemory = createMemoryLabel();
 
-        commandReg = createCenterLabel("Command register");
-        accu = createCenterLabel("Accumulator");
-        reg2 = createCenterLabel("Register 1");
-        reg3 = createCenterLabel("Register 2");
-        reg4 = createCenterLabel("Fegister 3");
-        carryFlag = createCenterLabel("Carry flag");
+        commandReg = createCenterLabel();
+        accu = createCenterLabel();
+        reg2 = createCenterLabel();
+        reg3 = createCenterLabel();
+        reg4 = createCenterLabel();
+        carryFlag = createCenterLabel();
+        result = createCenterLabel();
+
+        startAddress.setText("100");
+        setAddress.setText("500");
 
         buttonStop.setEnabled(false);
     }
 
     private BorderLayout createBorderLayout() {
         return new BorderLayout(10, 10);
+    }
+
+    private JScrollPane withScroll(JComponent component) {
+        JScrollPane jScrollPane = new JScrollPane(component);
+        jScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        jScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        return jScrollPane;
     }
 
     private JEditorPane createMemoryLabel() {
@@ -112,7 +126,7 @@ public class MiniPowerPcUi {
         return panel;
     }
 
-    private JEditorPane createCenterLabel(String text) {
+    private JEditorPane createCenterLabel() {
         JEditorPane l = new JEditorPane();
         l.setContentType("text/html");
         l.setAlignmentX(0.5f);
@@ -156,14 +170,14 @@ public class MiniPowerPcUi {
         for (int i = from; i <= to; i += 2) {
             address = Integer.toString(i) + " + " + Integer.toString(i + 1);
             value = "0";
-            valueString = "-";
-            MemoryItem m = memory.get(i, MemoryItem.class);
+            valueString = "0";
+            MemoryItem m;
+            synchronized (memory) {
+                m = memory.get(i, MemoryItem.class);
+            }
             if (m != null) {
-                value = m.asBinaryString();
-                if (value.length() > 16) {
-                    value = value.substring(value.length()-16);
-                }
                 valueString = m.asString();
+                value = m.asBinaryString();
             }
             if ( hightlight == i) {
                 b.append("<tr style=\"color: #00ff00; font-weight: bold;\">");
@@ -175,7 +189,7 @@ public class MiniPowerPcUi {
             b.append(address);
             b.append("</td>");
             b.append("<td>");
-            b.append(Util.leftPadNulls(value, 16));
+            b.append(Util.formatBinary(value, 16));
             b.append("</td>");
             b.append("<td>");
             b.append(valueString);
@@ -189,28 +203,44 @@ public class MiniPowerPcUi {
     }
 
     private void repaintRegisters() {
-        commandReg.setText("<b>Command register</b><br/><br/>"
-                + runner.getAddress());
+        commandReg.setText("<div style=\"font-size:9px\">" + "<b>Command register</b><br/>"
+                + runner.getAddress() + "<br/>"
+                + Util.formatBinary(runner.getAddress())+ "</div>");
 
-        accu.setText("<b>Accumulator</b><br/><br/>"
-                + runner.getAccu().get());
+        accu.setText("<div style=\"font-size:9px\">" + "<b>Accumulator</b><br/>"
+                + runner.getAccu().get() + "<br/>"
+                + Util.formatBinary(runner.getAccu().get())+ "</div>");
 
-        reg2.setText("<b>Register 1</b><br/><br/>"
-                + runner.getRegister(1).get());
+        reg2.setText("<div style=\"font-size:9px\">" + "<b>Register 1</b><br/>"
+                + runner.getRegister(1).get() + "<br/>"
+                + Util.formatBinary(runner.getRegister(1).get())+ "</div>");
 
-        reg3.setText("<b>Register 2</b><br/><br/>"
-                + runner.getRegister(2).get());
+        reg3.setText("<div style=\"font-size:9px\">" + "<b>Register 2</b><br/>"
+                + runner.getRegister(2).get() + "<br/>"
+                + Util.formatBinary(runner.getRegister(2).get())+ "</div>");
 
-        reg4.setText("<b>Register 3</b><br/><br/>"
-                + runner.getRegister(3).get());
+        reg4.setText("<div style=\"font-size:9px\">" + "<b>Register 3</b><br/>"
+                + runner.getRegister(3).get() + "<br/>"
+                + Util.formatBinary(runner.getRegister(3).get())+ "</div>");
 
-        carryFlag.setText("<b>Carry flag</b><br/><br/>"
-                + runner.getCarry());
+        carryFlag.setText("<div style=\"font-size:9px\">" + "<b>Carry flag</b><br/>"
+                + runner.getCarry()+ "</div>");
 
+        synchronized (memory) {
+            Value val504 = memory.get(504, Value.class);
+            Value val506 = memory.get(506, Value.class);
+            int val = Util.asInt32(val506, val504);
+            result.setText("<div style=\"font-size:9px\">" + "<b>Result (504-507)</b><br/>"
+                    + val + "<br/>"
+                    + "<div style=\"font-size:8px\">" +
+                    Util.leftPadNulls(Integer.toBinaryString(val), 32)
+                    + "</div>" + "</div>");
+        }
     }
 
     private void stopProgram() {
         running = false;
+        stopped = true;
 
         buttonStep.setEnabled(true);
         startAddress.setEnabled(true);
@@ -221,6 +251,7 @@ public class MiniPowerPcUi {
         buttonClear.setEnabled(true);
 
         buttonRunSlow.setEnabled(true);
+        buttonRunMedium.setEnabled(true);
         buttonRunFast.setEnabled(true);
         buttonStop.setEnabled(true);
     }
@@ -230,6 +261,7 @@ public class MiniPowerPcUi {
             return;
         }
 
+        stopped = false;
         running = true;
 
         buttonStep.setEnabled(false);
@@ -240,6 +272,7 @@ public class MiniPowerPcUi {
         buttonSetStart.setEnabled(false);
         buttonClear.setEnabled(false);
 
+        buttonRunMedium.setEnabled(true);
         buttonRunSlow.setEnabled(true);
         buttonRunFast.setEnabled(true);
         buttonStop.setEnabled(true);
@@ -251,15 +284,21 @@ public class MiniPowerPcUi {
         @Override
         public Void doInBackground() {
             try {
-                while (runner.cycle()) {
+                while (runner.cycle() && !stopped) {
                     Thread.sleep(delay);
-                    repaintMemoryPanes();
-                    repaintRegisters();
+                    if (updateDisplay) {
+                        repaintMemoryPanes();
+                        repaintRegisters();
+                    }
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } finally {
                 stopProgram();
+            }
+            if (!updateDisplay) {
+                repaintMemoryPanes();
+                repaintRegisters();
             }
             return null;
         }
@@ -269,37 +308,41 @@ public class MiniPowerPcUi {
         final JFrame frame = new JFrame("ZHAW Mini Power PC");
         final JTabbedPane tabPanel = new JTabbedPane();
 
-
         final JPanel commandPanel = createBorderPanel();
+        commandPanel.setMinimumSize(new Dimension(400, 0));
         commandPanel.setPreferredSize(new Dimension(450, 0));
         commandPanel.setSize(300, commandPanel.getHeight());
         commandPanel.setLayout(createBorderLayout());
-        commandPanel.add(programMemory, BorderLayout.CENTER);
+        commandPanel.add(withScroll(programMemory), BorderLayout.CENTER);
 
         final JPanel dataPanel = createBorderPanel();
         dataPanel.setPreferredSize(new Dimension(450, 0));
         dataPanel.setLayout(createBorderLayout());
-        dataPanel.add(dataMemory, BorderLayout.CENTER);
+        dataPanel.add(withScroll(dataMemory), BorderLayout.CENTER);
+
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+                commandPanel, dataPanel);
 
         final JPanel regPanel = createBorderPanel();
         regPanel.setPreferredSize(new Dimension(300, 0));
-        regPanel.setLayout(new GridLayout(6, 1));
+        regPanel.setLayout(new GridLayout(7, 1));
+        regPanel.setLayout(new GridLayout(7, 1));
         regPanel.add(commandReg);
         regPanel.add(accu);
         regPanel.add(reg2);
         regPanel.add(reg3);
         regPanel.add(reg4);
         regPanel.add(carryFlag);
+        regPanel.add(result);
 
         final JPanel processorPanel = new JPanel();
         processorPanel.setLayout(createBorderLayout());
-        processorPanel.add(commandPanel, BorderLayout.WEST);
-        processorPanel.add(dataPanel, BorderLayout.CENTER);
+        processorPanel.add(splitPane, BorderLayout.CENTER);
         processorPanel.add(regPanel, BorderLayout.EAST);
 
         final JPanel programPanel = createBorderPanel();
         programPanel.setLayout(createBorderLayout());
-        programPanel.add(programText, BorderLayout.CENTER);
+        programPanel.add(withScroll(programText), BorderLayout.CENTER);
 
         // Button panel
         final JPanel processorButtons = createButtonPanel();
@@ -341,6 +384,20 @@ public class MiniPowerPcUi {
                     @Override
                     public void run() {
                         delay = 1000;
+                        updateDisplay = true;
+                        runProgram();
+                    }
+                });
+            }
+        });
+        buttonRunMedium.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        delay = 0;
+                        updateDisplay = true;
                         runProgram();
                     }
                 });
@@ -353,6 +410,7 @@ public class MiniPowerPcUi {
                     @Override
                     public void run() {
                         delay = 0;
+                        updateDisplay = false;
                         runProgram();
                     }
                 });
@@ -377,7 +435,9 @@ public class MiniPowerPcUi {
             public void actionPerformed(ActionEvent e) {
                 int adr = Integer.parseInt(setAddress.getText());
                 int val = Integer.parseInt(setValue.getText());
-                memory.set(adr, new Value(val));
+                synchronized (memory){
+                    memory.set(adr, new Value(val));
+                }
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -387,6 +447,21 @@ public class MiniPowerPcUi {
             }
         });
 
+        buttonClear.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                memory.clear(500);
+                for (Register r : runner.getRegisters()) {
+                    r.set(0);
+                }
+                runner.setAddress(0);
+                runner.clearCarry();
+                runner.setAddress(100);
+
+                repaintMemoryPanes();
+                repaintRegisters();
+            }
+        });
 
         filler.setPreferredSize(new Dimension(10, 0));
         setAddress.setPreferredSize(new Dimension(100, 30));
@@ -406,6 +481,7 @@ public class MiniPowerPcUi {
         // step buttons
         processorButtons.add(buttonStep);
         processorButtons.add(buttonRunSlow);
+        processorButtons.add(buttonRunMedium);
         processorButtons.add(buttonRunFast);
         processorButtons.add(buttonStop);
         processorButtons.add(buttonClear);
