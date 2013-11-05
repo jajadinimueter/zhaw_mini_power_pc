@@ -115,21 +115,19 @@
         234 LWDD 0 #512
         236 SLA
         238 SWDD 0 #512
-        240 BCD #244 ; [shift 512 carry]
-        242 BD #258 ; [shift 514]
+        240 BCD #244 ; [shift inc]
+        242 BD #258 ; [shift only]
 
-        ; [shift 512 carry]
+        ; [shift inc]
         244 LWDD 0 #514
-        246 BZD #250 ; [init 514]
-        248 BD #258 ; [shift 514]
-
-        ; [init 514]
+        246 SLA
+        248 SWDD 0 #514
         250 LWDD 0 #514
         252 INC
         254 SWDD 0 #514
         256 BD #196 ; [mainloop second rightshift]
 
-        ; [shift 514]
+        ; [shift only]
         258 LWDD 0 #514
         260 SLA
         262 SWDD 0 #514
